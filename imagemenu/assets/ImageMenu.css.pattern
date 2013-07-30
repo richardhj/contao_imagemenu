@@ -1,0 +1,34 @@
+#{{selector}}
+{
+	position:relative;
+	width:{{width::value}}{{width::unit}};
+	height:{{height::value}}{{height::unit}};
+	overflow:hidden;
+}
+
+#{{selector}} ul
+{
+	list-style:none;
+	margin:0;
+	padding:0;
+	display:block;
+	height:{{height::value}}{{height::unit}};
+	width:{{width_twice::value}}{{width::unit}};
+}
+
+#{{selector}} ul li
+{
+	float:left;
+}
+
+#{{selector}} ul li a
+{
+	text-indent:-1000px;
+	cursor:pointer;
+	display:block;
+	overflow:hidden;
+	width:{{width_item::value}}{{width::unit}};
+	height:{{height::value}}{{height::unit}};
+}
+
+{{items}}
