@@ -71,7 +71,7 @@ class ModuleImageMenu extends \Module
 		$level = ($this->levelOffset > 0) ? $this->levelOffset : 0;
 
 		// Overwrite with custom reference page
-		if ($this->defineRoot && $this->rootPage > 0)
+		if ($this->rootPage > 0)
 		{
 			$trail = array($this->rootPage);
 			$level = 0;
@@ -102,7 +102,7 @@ class ModuleImageMenu extends \Module
 			$cssID = deserialize($this->cssID)[0];
 
 			$GLOBALS['TL_JAVASCRIPT'][] = TL_SCRIPT_URL . 'system/modules/imagemenu/assets/ImageMenu.min.js|static';
-			$GLOBALS['TL_CSS'][] = TL_SCRIPT_URL . 'system/modules/imagemenu/assets/ImageMenu-' . $cssID  . '-' . $trail[$level] . '.css';
+			$GLOBALS['TL_CSS'][] = TL_SCRIPT_URL . 'system/modules/imagemenu/assets/ImageMenu-' . $this->id . '.css';
 			$GLOBALS['TL_MOOTOOLS'][] = '<script type="text/javascript">
 window.addEvent("domready", function()
 {
