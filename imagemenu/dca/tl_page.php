@@ -3,7 +3,7 @@
 /**
  * Contao Open Source CMS
  *
- * Copyright (C) 2005-2012 Leo Feyer
+ * Copyright (C) 2005-2013 Leo Feyer
  *
  * @package   ImageMenu
  * @author    Richard Henkenjohann
@@ -35,7 +35,7 @@ foreach ($GLOBALS['TL_DCA']['tl_page']['palettes'] as $name => $palette)
  */
 $GLOBALS['TL_DCA']['tl_page']['fields']['im_image'] = array
 (
-	'label'                   => &$GLOBALS['TL_LANG']['tl_module']['im_fallback'],
+	'label'                   => &$GLOBALS['TL_LANG']['tl_page']['im_image'],
 	'exclude'                 => true,
 	'inputType'               => 'fileTree',
 	'eval'                    => array('fieldType'=>'radio', 'files'=>true, 'filesOnly'=>true, 'extensions'=>'jpg,jpeg,gif,png'),
