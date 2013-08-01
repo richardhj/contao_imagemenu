@@ -99,8 +99,6 @@ class ModuleImageMenu extends \Module
 				$i++;
 			}
 
-			$cssID = deserialize($this->cssID)[0];
-
 			$GLOBALS['TL_JAVASCRIPT'][] = TL_SCRIPT_URL . 'system/modules/imagemenu/assets/ImageMenu.min.js|static';
 			$GLOBALS['TL_CSS'][] = TL_SCRIPT_URL . 'system/modules/imagemenu/assets/ImageMenu-' . $this->id . '.css';
 			$GLOBALS['TL_MOOTOOLS'][] = '<script type="text/javascript">
