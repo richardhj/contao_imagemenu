@@ -161,7 +161,7 @@ class tl_module_imagemenu extends Backend
 			// Write background css from image given in page settings
 			foreach ($items as $id)
 			{
-				$objPage = $this->getPageDetails($id);
+				$objPage = \PageModel::findByPk($id);
 
 				if ($objPage->im_image)
 				{
