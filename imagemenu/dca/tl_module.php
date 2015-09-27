@@ -36,7 +36,8 @@ $GLOBALS['TL_DCA']['tl_module']['subpalettes']['im_openIfActive'] = 'im_fallback
  */
 $GLOBALS['TL_DCA']['tl_module']['fields']['showLevel']['eval']['tl_class'] = 'w50 cbx m12';
 $GLOBALS['TL_DCA']['tl_module']['fields']['showProtected']['eval']['tl_class'] = 'w50 cbx m12';
-$GLOBALS['TL_DCA']['tl_module']['fields']['rootPage']['save_callback'][] = array('tl_module_imagemenu', 'checkRootId');
+$GLOBALS['TL_DCA']['tl_module']['fields']['rootPage']['save_callback'][] = array('tl_module_imagemenu', 'isMandatory');
+$GLOBALS['TL_DCA']['tl_module']['fields']['cssID']['save_callback'][] = array('tl_module_imagemenu', 'isMandatory');
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['im_width'] = array
 (
@@ -116,15 +117,28 @@ class tl_module_imagemenu extends Backend
 
 
 	/**
-	 * Check root id
+	 * Check root id as save_callback
+	 *
+	 * @param mixed         $varValue
+	 * @param DataContainer $dc
+	 *
+	 * @return mixed
+	 * @throws Exception
 	 */
-	public function checkRootId($varValue, DataContainer $dc)
+	public function isMandatory($varValue, $dc)
 	{
 		if ($dc->activeRecord->type == 'imagemenu')
 		{
-			if ($varValue == 0)
+			$check = deserialize($varValue);
+
+			if (is_array($check))
 			{
-				throw new Exception('A root page must be set');
+				$check = $check[0];
+			}
+
+			if (!$check)
+			{
+				throw new Exception('This field must be set');
 			}
 		}
 
@@ -133,40 +147,38 @@ class tl_module_imagemenu extends Backend
 
 
 	/**
-	 * Generate the css file
+	 * Generate the css file as onsubmit_callback
+	 *
+	 * @param DataContainer $dc
 	 */
-	public function generateImageMenuCss(DataContainer $dc)
+	public function generateImageMenuCss($dc)
 	{
 		if ($dc->activeRecord->type == 'imagemenu')
 		{
 			$cssID = deserialize($dc->activeRecord->cssID)[0];
 			$arrWidth = deserialize($dc->activeRecord->im_width);
 			$arrHeight = deserialize($dc->activeRecord->im_height);
-			$items = array();
 
-			// Generate array with pages
-			if ($dc->activeRecord->rootPage > 0)
+			$objSubPages = \PageModel::findPublishedSubpagesWithoutGuestsByPid($dc->activeRecord->rootPage);
+
+			if (null === $objSubPages)
 			{
-				$objSubpages = \PageModel::findPublishedSubpagesWithoutGuestsByPid($dc->activeRecord->rootPage);
-				while ($objSubpages->next())
-				{
-					$items[] = $objSubpages->id;
-				}
+				return;
 			}
 
 			$css = file_get_contents(TL_ROOT . '/system/modules/imagemenu/assets/ImageMenu.css.pattern');
-
 			$cssItems = '';
 
 			// Write background css from image given in page settings
-			foreach ($items as $id)
+			if (!$dc->activeRecord->im_selfManage)
 			{
-				$objPage = \PageModel::findByPk($id);
-
-				if ($objPage->im_image)
+				while ($objSubPages->next())
 				{
-					$objImage = \FilesModel::findByPk($objPage->im_image);
-					$cssItems .= '#' . $cssID . ' ul li a.' . $objPage->alias . "\n{\n\tbackground:url(../../../../$objImage->path) no-repeat left top;\n}\n\n";
+					if ($objSubPages->im_image)
+					{
+						$objImage = $objSubPages->getRelated('im_image');
+						$cssItems .= sprintf('#%s ul li a.%s'. "\n" .'{'. "\n\t" .'background:url("../../../../%s") no-repeat left top;'. "\n" .'}'. "\n\n", $cssID, $objSubPages->alias, $objImage->path);
+					}
 				}
 			}
 
@@ -191,7 +203,7 @@ class tl_module_imagemenu extends Backend
 					$arrHeight['value'],
 					$arrHeight['unit'],
 					$arrWidth['value'] * 2,
-					round($arrWidth['value'] / count($items)),
+					round($arrWidth['value'] / $objSubPages->count()),
 					$cssItems
 				),
 				$css

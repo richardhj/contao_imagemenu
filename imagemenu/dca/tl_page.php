@@ -38,6 +38,7 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['im_image'] = array
 	'label'                   => &$GLOBALS['TL_LANG']['tl_page']['im_image'],
 	'exclude'                 => true,
 	'inputType'               => 'fileTree',
-	'eval'                    => array('fieldType'=>'radio', 'files'=>true, 'filesOnly'=>true, 'extensions'=>'jpg,jpeg,gif,png'),
-	'sql'                     => "int(10) unsigned NOT NULL default '0'",
+	'eval'                    => array('filesOnly'=>true, 'fieldType'=>'radio', 'tl_class'=>'clr', 'extensions'=>Config::get('validImageTypes')),
+	'sql'                     => "binary(16) NULL",
+	'relation'                => array('type'=>'hasOne', 'table'=>\FilesModel::getTable(), 'field'=>'uuid')
 );

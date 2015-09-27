@@ -14,8 +14,7 @@
 /**
  * Front end modules
  */
-array_insert($GLOBALS['FE_MOD']['navigationMenu'], 1,
-	array
+array_insert($GLOBALS['FE_MOD']['navigationMenu'], 1, array
 	(
 		'imagemenu'        => 'ModuleImageMenu'
 	)

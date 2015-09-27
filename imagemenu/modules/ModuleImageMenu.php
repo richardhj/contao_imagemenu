@@ -17,6 +17,9 @@
  */
 namespace ImageMenu;
 
+use Contao\Module;
+use Contao\PageModel;
+
 
 /**
  * Class ModuleImageMenu
@@ -26,7 +29,7 @@ namespace ImageMenu;
  * @author     Richard Henkenjohann
  * @package    ImageMenu
  */
-class ModuleImageMenu extends \Module
+class ModuleImageMenu extends Module
 {
 
 	/**
@@ -65,6 +68,7 @@ class ModuleImageMenu extends \Module
 	 */
 	protected function compile()
 	{
+		/** @var PageModel $objPage */
 		global $objPage;
 
 		$trail = $objPage->trail;
@@ -86,41 +90,56 @@ class ModuleImageMenu extends \Module
 		if (TL_MODE == 'FE')
 		{
 			$i = 0;
-			$objSubpages = \PageModel::findPublishedSubpagesWithoutGuestsByPid($trail[$level]);
+			$objSubPages = PageModel::findPublishedSubpagesWithoutGuestsByPid($trail[$level]);
 
-			while ($objSubpages->next())
+			if (null !== $objSubPages)
 			{
-				if ((($objPage->id == $objSubpages->id || $objSubpages->type == 'forward' && $objPage->id == $objSubpages->jumpTo) && !$this instanceof \ModuleSitemap && !\Input::get('articles')) || // Active page
-					(in_array($objSubpages->id, $objPage->trail)) || // Trail page
-					($objSubpages->id == $this->im_fallback)) // Fallback page
+				while ($objSubPages->next())
 				{
-					$openId = $i;
+					if ((($objPage->id == $objSubPages->id || $objSubPages->type == 'forward' && $objPage->id == $objSubPages->jumpTo) && !$this instanceof \ModuleSitemap && !\Input::get('articles')) || // Active page
+						(in_array($objSubPages->id, $objPage->trail)) || // Trail page
+						($objSubPages->id == $this->im_fallback)) // Fallback page
+					{
+						$openId = $i;
+					}
+
+					$i++;
 				}
-				$i++;
 			}
+
+			$cssID = deserialize($this->cssID)[0];
 
 			$GLOBALS['TL_JAVASCRIPT'][] = TL_SCRIPT_URL . 'system/modules/imagemenu/assets/ImageMenu.min.js|static';
 			$GLOBALS['TL_CSS'][] = TL_SCRIPT_URL . 'system/modules/imagemenu/assets/ImageMenu-' . $this->id . '.css';
-			$GLOBALS['TL_MOOTOOLS'][] = '<script type="text/javascript">
+
+			$GLOBALS['TL_MOOTOOLS'][] = sprintf(<<<'EOT'
+<script type="text/javascript">
 window.addEvent("domready", function()
 {
-	var basicMenu = new ImageMenu($$("#imageMenu ul li a"),
+	var basicMenu = new ImageMenu($$("#%s ul li a"),
 	{
-		openWidth: ' . deserialize($this->im_openWidth)['value'] . ',
-		border: ' . (deserialize($this->im_border)[2] ?: 2) . ',
-		duration: ' . $this->im_duration . ',
-		open: ' . (($this->im_openIfActive && $openId !== null) ? $openId : 'null') . ',
+		openWidth: %s,
+		border: %s,
+		duration: %s,
+		open: %s,
 		OnClickOpen: function(e,i)
 		{
         	location.href = e;
         }
 	});
 });
-</script>';
-
+</script>
+EOT
+,
+				$cssID,
+				deserialize($this->im_openWidth)['value'],
+				deserialize($this->im_border)[2] ?: 2,
+				$this->im_duration ?: 400,
+				($this->im_openIfActive && $openId !== null) ? $openId : 'null'
+			);
 		}
 
-		$this->Template->request = $this->getIndexFreeRequest(true);
+		$this->Template->request = ampersand(\Environment::get('indexFreeRequest'));
 		$this->Template->skipId = 'skipNavigation' . $this->id;
 		$this->Template->skipNavigation = specialchars($GLOBALS['TL_LANG']['MSC']['skipNavigation']);
 		$this->Template->items = $this->renderNavigation($trail[$level]);
